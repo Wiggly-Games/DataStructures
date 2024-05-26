@@ -22,7 +22,7 @@ export class Bag<T> implements IBag<T> {
 
     // Creates a new ProbabilityBag.
     constructor(data?: InputTypes<T>){
-        this._data = Bag.ConvertToMap<T>(data);
+        this._data = Bag.ConvertInputData<T>(data);
 
         let counter = 0;
         if (data) {
@@ -35,7 +35,7 @@ export class Bag<T> implements IBag<T> {
     }
 
     // Converts the input data into a map, so that it can be stored within a bag.
-    static ConvertToMap<T>(inputData: InputTypes<T>) {
+    static ConvertInputData<T>(inputData: InputTypes<T>) {
         // 1. If no input data is provided, we just use an empty map.
         if (inputData === undefined) {
             return new Map<T, number>();
@@ -114,7 +114,7 @@ export class Bag<T> implements IBag<T> {
     }
 
     // Retrieves the data as a read-only map.
-    GetMap(): ReadonlyMap<T, number> {
+    ConvertToMap(): ReadonlyMap<T, number> {
         return this._data;
     }
 

@@ -20,7 +20,7 @@ export interface IBag<T> {
     GetItems(): IterableIterator<T>;
     CountContents(): number;
 
-    GetMap(): ReadonlyMap<T, number>;
+    ConvertToMap(): ReadonlyMap<T, number>;
     Clear(): void;
     IsBag(): boolean;
 }
