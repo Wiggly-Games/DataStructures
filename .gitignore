@@ -1,0 +1,6 @@
+node_modules/
+build/*
+build.zip
+
+# Keep the build/package.json file - this allows us to use npm run
+!build/package.json

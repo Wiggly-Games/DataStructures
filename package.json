@@ -1,0 +1,21 @@
+{
+  "name": "@wiggly-games/template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "compile": "tsc",
+    "dev": "npm run compile && npm start",
+    "start": "cd build && npm start",
+    "test": "npm run compile && cd build && npm run test",
+    "sandbox": "cd build && node",
+    "clean": "rmdir /S /Q \"build/Logs/LogFiles\"",
+    "zip": "tar.exe -a -c -f build.zip build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.12"
+  }
+}
