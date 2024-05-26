@@ -2,8 +2,8 @@
     "name": "@wiggly-games/data-structures",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
-    "types": "index.d.ts",
+    "main": "src/index.js",
+    "types": "src/index.d.ts",
     "scripts": {
       "start": "node main.js",
       "test": "node test.js"
