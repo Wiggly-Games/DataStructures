@@ -12,17 +12,17 @@
     Probability can be reduced by calling Remove on that element, which will remove one of it from the bag.
 */
 
-import { IProbabilityBag } from "./IProbabilityBag";
+import { IBag } from "./IBag";
 
 type InputTypes<T> = ([any, number])[] | Map<T, number> | undefined;
 
-export class ProbabilityBag<T> implements IProbabilityBag<T> {
+export class Bag<T> implements IBag<T> {
     private _data: Map<T, number>;
     private _count: number;
 
     // Creates a new ProbabilityBag.
     constructor(data?: InputTypes<T>){
-        this._data = ProbabilityBag.ConvertToMap<T>(data);
+        this._data = Bag.ConvertToMap<T>(data);
 
         let counter = 0;
         if (data) {
@@ -124,7 +124,7 @@ export class ProbabilityBag<T> implements IProbabilityBag<T> {
     }
     
     // Always true. Can be used to check if a class is a Probability Bag.
-    IsProbabilityBag(){
+    IsBag(){
         return true;
     }
 }

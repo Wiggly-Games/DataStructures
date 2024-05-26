@@ -1,2 +1,2 @@
 export * from "./Queue";
-export * from "./ProbabilityBag";
+export * from "./Bag";

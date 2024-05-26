@@ -12,7 +12,7 @@
     Probability can be reduced by calling Remove on that element, which will remove one of it from the bag.
 */
 
-export interface IProbabilityBag<T> {
+export interface IBag<T> {
     Add(item: T): void;
     Remove(item: T): boolean;
     Pull(): T;
@@ -22,5 +22,5 @@ export interface IProbabilityBag<T> {
 
     GetMap(): ReadonlyMap<T, number>;
     Clear(): void;
-    IsProbabilityBag(): boolean;
+    IsBag(): boolean;
 }
