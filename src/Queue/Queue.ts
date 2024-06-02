@@ -34,9 +34,12 @@ export class Queue<T> implements IQueue<T> {
         this._startingIndex = 0;
     }
 
+    // Adds a new item to the queue.
     Add(element: T): void {
         this._array.push(element);
     }
+
+    // Removes an element from the queue. Returns the removed element.
     Remove(): T {
         const removedElement = this._array[this._startingIndex];
         this._startingIndex += 1;
@@ -46,6 +49,16 @@ export class Queue<T> implements IQueue<T> {
         }
 
         return removedElement;
+    }
+    
+    // Peeks at the first element of the queue without removing it.
+    Peek() {
+        return this._array[this._startingIndex];
+    }
+
+    // Returns true if there are any elements in the queue.
+    Any(): boolean {
+        return this._array.length - this._startingIndex > 0;
     }
 
     private _resize() {
