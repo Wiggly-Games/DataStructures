@@ -14,8 +14,6 @@
 
 import { IBag } from "./IBag";
 
-type InputTypes<T> = ([T, number])[] | Map<T, number> | undefined;
-
 export class Bag<T> implements IBag<T> {
     private _data: Map<T, number>;
     private _count: number;
@@ -33,7 +31,7 @@ export class Bag<T> implements IBag<T> {
 
         this._count = counter;
     }
-    
+
     // Adds a key to the map, either increasing its probability or setting it as an option.
     Add(key: T){
         if (this._data.has(key)) {
