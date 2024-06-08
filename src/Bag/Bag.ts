@@ -14,15 +14,15 @@
 
 import { IBag } from "./IBag";
 
-type InputTypes<T> = ([any, number])[] | Map<T, number> | undefined;
+type InputTypes<T> = ([T, number])[] | Map<T, number> | undefined;
 
 export class Bag<T> implements IBag<T> {
     private _data: Map<T, number>;
     private _count: number;
 
     // Creates a new ProbabilityBag.
-    constructor(data?: InputTypes<T>){
-        this._data = Bag.ConvertInputData<T>(data);
+    constructor(data?: Iterable<readonly [T, number]> | undefined){
+        this._data = new Map<T, number>(data);
 
         let counter = 0;
         if (data) {
@@ -32,22 +32,6 @@ export class Bag<T> implements IBag<T> {
         }
 
         this._count = counter;
-    }
-
-    // Converts the input data into a map, so that it can be stored within a bag.
-    static ConvertInputData<T>(inputData: InputTypes<T>) {
-        // 1. If no input data is provided, we just use an empty map.
-        if (inputData === undefined) {
-            return new Map<T, number>();
-        }
-
-        // 2. If we have a map, we can just use the map directly.
-        if (inputData instanceof Map) {
-            return inputData;
-        }
-
-        // 3. Otherwise, we need to convert it to a map. This is an array of elements.
-        return new Map(inputData);
     }
     
     // Adds a key to the map, either increasing its probability or setting it as an option.
@@ -123,8 +107,9 @@ export class Bag<T> implements IBag<T> {
         this._data.clear();
     }
     
-    // Always true. Can be used to check if a class is a Probability Bag.
-    IsBag(){
-        return true;
+    // Returns all entries from the bag.
+    // This is all the items, along with the number of times that item occurs in the bag.
+    Entries() {
+        return this._data.entries();
     }
 }
