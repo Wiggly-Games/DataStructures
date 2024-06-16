@@ -12,7 +12,9 @@
     Probability can be reduced by calling Remove on that element, which will remove one of it from the bag.
 */
 
+import { Readable, Writable } from "stream";
 import { IBag } from "./IBag";
+import { createInterface } from "readline/promises";
 
 export class Bag<T> implements IBag<T> {
     private _data: Map<T, number>;
@@ -105,9 +107,49 @@ export class Bag<T> implements IBag<T> {
         this._data.clear();
     }
     
-    // Returns all entries from the bag.
-    // This is all the items, along with the number of times that item occurs in the bag.
-    Entries() {
-        return this._data.entries();
+    // Writes the bag to a WritableStream.
+    async Write(separator: string, writeStream: Writable): Promise<void> {
+        for (var [key, value] of this._data) {
+            await writeStream.write(`${key}${separator}${value}\n`);
+        }
     }
+
+    // Reads the bag from an input stream.
+    // Also takes in a parseKey argument, which is used to convert from a string to the expected key type (T).
+    Read(separator: string, readStream: Readable, parseKey: (key: string)=>T) {
+        const matchLine = new RegExp(`(.+)${separator}(.+)`);
+        return new Promise<void>((fulfill, reject) => {
+            // Read through the read stream line by line;
+            // That way we can retrieve all the files that we saved earlier.
+            const reader = createInterface(readStream);
+            let count = 0;
+
+            reader.on('line', (line) => {
+                // The line format is KEY VALUE, with the null character (\0) as the separator.
+                const [_, key, value] = matchLine.exec(line);
+
+                // The values will be retrieved here as strings.
+                // We need to parse the key into the expected format using parseKey,
+                // And the value will always be a number, so we can parse it with parseInt.
+                const parsedKey = parseKey(key);
+                const parsedValue = parseInt(value);
+
+                // If the value already exists, this is an unexpected behaviour and something went wrong in saving earlier.
+                // Throw an error.
+                if (this._data.has(parsedKey)) {
+                    reject(`Parsed key: ${key}, which was already set in the bag (has current value ${this._data.get(parsedKey)} and new value ${value}).`);
+                }
+
+                // Otherwise, we can update our map with this value & update our counter
+                this._data.set(parsedKey, parsedValue);
+                count += parsedValue;
+            });
+            reader.on('close', () => {
+                // At this point, all the data was loaded, set our counter and return back
+                this._count = count;
+                fulfill();
+            });
+        });
+    }
+
 }
