@@ -1,3 +1,5 @@
+import { Writable, Readable } from "stream";
+
 /*
     Probability Map is designed to add elements, and pull them out later based on how common the element is.
 
@@ -21,6 +23,9 @@ export interface IBag<T> {
     CountContents(): number;
 
     Clear(): void;
-
     Entries(): IterableIterator<[T, number]>;
+
+    // Data persistence
+    Write(separator: string, writeStream: Writable);
+    Read(separator: string, readStream: Readable, parseValue: (key: string)=>T);
 }
