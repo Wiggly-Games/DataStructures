@@ -23,6 +23,7 @@ export interface IBag<T> {
     CountContents(): number;
 
     Clear(): void;
+    Entries(): IterableIterator<[T, number]>;
 
     // Data persistence
     Write(separator: string, writeStream: Writable);

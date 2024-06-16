@@ -107,6 +107,12 @@ export class Bag<T> implements IBag<T> {
         this._data.clear();
     }
     
+    // Returns all entries from the bag.
+    // This is all the items, along with the number of times that item occurs in the bag.
+    Entries() {
+        return this._data.entries();
+    }
+
     // Writes the bag to a WritableStream.
     async Write(separator: string, writeStream: Writable): Promise<void> {
         for (var [key, value] of this._data) {
