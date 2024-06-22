@@ -1,5 +1,6 @@
 import { Bag, Queue } from "./src";
 import * as Files from "@wiggly-games/files"
+import { Reader } from "@wiggly-games/node-readline";
 
 function TestQueue(){
     const queue = new Queue<number>();
@@ -19,6 +20,7 @@ function TestQueue(){
 async function TestBag(){
     const bag = new Bag<number>();
     const bag2 = new Bag<number>();
+    const bag3 = new Bag<number>();
 
     for (let i = 0; i < 50; i++) {
         bag.Add(1);
@@ -30,15 +32,21 @@ async function TestBag(){
         bag.Add(3);
     }
     
+    // Write twice, so that we can push it into two separate bags.
     await Files.WithWriteStream("./Test.txt", (stream) => {
-        return bag.Write("=", stream);
+        return bag.Write(stream);
+    })
+    await Files.WithAppendStream("./Test.txt", (stream) => {
+        return bag.Write(stream);
     })
 
-    await Files.WithReadStream("./Test.txt", (stream) => {
-        return bag2.Read("=", stream, (data) => parseInt(data));
-    });
+    const fileReader = new Reader("./Test.txt");
+    bag2.Read(fileReader, (data) => parseInt(data));
+    bag3.Read(fileReader, (data) => parseInt(data));
 
-    console.log(bag2);
+    console.assert(bag.Equals(bag2), `ERROR: Bag and Bag2 are different.`);
+    console.assert(bag.Equals(bag3), `ERROR: Bag and Bag3 are different.`);
+    console.assert(bag2.Equals(bag3), `ERROR: Bag2 and Bag3 are different.`);
 }
 
 

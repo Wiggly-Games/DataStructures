@@ -1,4 +1,5 @@
-import { Writable, Readable } from "stream";
+import { Reader } from "@wiggly-games/node-readline";
+import { Writable } from "stream";
 
 /*
     Probability Map is designed to add elements, and pull them out later based on how common the element is.
@@ -25,7 +26,10 @@ export interface IBag<T> {
     Clear(): void;
     Entries(): IterableIterator<[T, number]>;
 
+    // Check if this bag and another are equivalent
+    Equals(otherBag: IBag<T>): boolean;
+
     // Data persistence
-    Write(separator: string, writeStream: Writable);
-    Read(separator: string, readStream: Readable, parseValue: (key: string)=>T);
+    Write(writeStream: Writable);
+    Read(reader: Reader, parseValue: (key: string)=>T);
 }
