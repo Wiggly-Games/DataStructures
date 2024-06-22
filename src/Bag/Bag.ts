@@ -12,9 +12,12 @@
     Probability can be reduced by calling Remove on that element, which will remove one of it from the bag.
 */
 
+const NUM_WRITES_PER_CORK = 1000
+
 import { Readable, Writable } from "stream";
 import { IBag } from "./IBag";
 import { createInterface } from "readline/promises";
+import { Reader } from "@wiggly-games/node-readline";
 
 export class Bag<T> implements IBag<T> {
     private _data: Map<T, number>;
@@ -114,48 +117,84 @@ export class Bag<T> implements IBag<T> {
     }
 
     // Writes the bag to a WritableStream.
-    async Write(separator: string, writeStream: Writable): Promise<void> {
+    async Write(writeStream: Writable): Promise<void> {
+        writeStream.cork();
+
+        let i = 0;
         for (var [key, value] of this._data) {
-            await writeStream.write(`${key}${separator}${value}\n`);
+            await writeStream.write(`${key}\n${value}\n`);
+
+            // Check if we should uncork
+            // This allows us to write a bunch of the data together in one cycle.
+            // If we go beyond the NUM_WRITES_PER_CORK writes, we should uncork to avoid overloading memory.
+            i++;
+            if (i % NUM_WRITES_PER_CORK == 0) {
+                writeStream.uncork();
+                writeStream.cork();
+            }
         }
+        await writeStream.write("\n");
+        writeStream.uncork();
     }
 
     // Reads the bag from an input stream.
     // Also takes in a parseKey argument, which is used to convert from a string to the expected key type (T).
-    Read(separator: string, readStream: Readable, parseKey: (key: string)=>T) {
-        const matchLine = new RegExp(`(.+)${separator}(.+)`);
-        return new Promise<void>((fulfill, reject) => {
-            // Read through the read stream line by line;
-            // That way we can retrieve all the files that we saved earlier.
-            const reader = createInterface(readStream);
-            let count = 0;
+    Read(reader: Reader, parseKey: (key: string)=>T) {
+        let count = 0;
+        while (reader.HasNextLine()){
+            const key = reader.ReadLine();
+            if (key === "") {
+                break;
+            }
 
-            reader.on('line', (line) => {
-                // The line format is KEY VALUE, with the null character (\0) as the separator.
-                const [_, key, value] = matchLine.exec(line);
+            if (!reader.HasNextLine()){
+                throw `Data Error: Found a key, but no value.`
+            }
+            const value = reader.ReadLine();
 
-                // The values will be retrieved here as strings.
-                // We need to parse the key into the expected format using parseKey,
-                // And the value will always be a number, so we can parse it with parseInt.
-                const parsedKey = parseKey(key);
-                const parsedValue = parseInt(value);
+            // The values will be retrieved here as strings.
+            // We need to parse the key into the expected format using parseKey,
+            // And the value will always be a number, so we can parse it with parseInt.
+            const parsedKey = parseKey(key);
+            const parsedValue = parseInt(value);
 
-                // If the value already exists, this is an unexpected behaviour and something went wrong in saving earlier.
-                // Throw an error.
-                if (this._data.has(parsedKey)) {
-                    reject(`Parsed key: ${key}, which was already set in the bag (has current value ${this._data.get(parsedKey)} and new value ${value}).`);
-                }
+            // If the value already exists, this is an unexpected behaviour and something went wrong in saving earlier.
+            // Throw an error.
+            if (this._data.has(parsedKey)) {
+                throw `Parsed key: ${key}, which was already set in the bag (has current value ${this._data.get(parsedKey)} and new value ${value}).`;
+            }
 
-                // Otherwise, we can update our map with this value & update our counter
-                this._data.set(parsedKey, parsedValue);
-                count += parsedValue;
-            });
-            reader.on('close', () => {
-                // At this point, all the data was loaded, set our counter and return back
-                this._count = count;
-                fulfill();
-            });
-        });
+            // Otherwise, we can update our map with this value & update our counter
+            this._data.set(parsedKey, parsedValue);
+            count += parsedValue;
+        }
+
+        this._count = count;
     }
 
+    // Checks if this bag is identical to another bag.
+    Equals(otherBag: Bag<T>){
+        // If the two counts are different, the bags don't match.
+        if (this._count !== otherBag._count) {
+            return false;
+        }
+
+        // Check all data; the keys should be the same and the values should match.
+        this._data.forEach((value, key) => {
+            if (!otherBag._data.has(key) || otherBag._data.get(key) !== value) {
+                return false;
+            }
+        });
+
+        // Repeat the process in reverse. Other Bag shouldn't have any items that we don't.
+        otherBag._data.forEach((_, key) => {
+            if (!this._data.has(key)) {
+                return false;
+            }
+        })
+
+        // At this point, all data matches between the two, and the counts are the same.
+        // The bags are equivalent.
+        return true;
+    }
 }
