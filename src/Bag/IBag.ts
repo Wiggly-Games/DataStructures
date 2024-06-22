@@ -30,6 +30,6 @@ export interface IBag<T> {
     Equals(otherBag: IBag<T>): boolean;
 
     // Data persistence
-    Write(writeStream: Writable);
+    Write(writeStream: Writable): Promise<void>;
     Read(reader: Reader, parseValue: (key: string)=>T);
 }
